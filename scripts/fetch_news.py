@@ -1,21 +1,25 @@
 import json
 import feedparser
 from datetime import datetime, timedelta
-from email.utils import parsedate_to_datetime
 
-# ============================
-# Configuration
-# ============================
+# ===================================
+# CONFIG
+# ===================================
 
 DAYS_TO_KEEP = 7
 
-PRIORITY_KEYWORDS = [
-    "bangladesh",
-    "bangladeshi",
+KEYWORDS = [
+    "student",
+    "students",
+    "study",
     "study abroad",
-    "international student",
-    "student visa",
+    "visa",
     "scholarship",
+    "education",
+    "international",
+    "university",
+    "higher education",
+    "college",
     "canada",
     "uk",
     "united kingdom",
@@ -24,23 +28,26 @@ PRIORITY_KEYWORDS = [
     "united states",
     "germany",
     "new zealand",
-    "university",
-    "higher education"
+    "bangladesh",
+    "bangladeshi"
 ]
 
-EXCLUDED_KEYWORDS = [
-    "colombia",
-    "brazil",
-    "argentina",
-    "ecuador",
-    "peru",
-    "africa",
-    "latin america"
+BOOST_KEYWORDS = [
+    "bangladesh",
+    "bangladeshi",
+    "canada",
+    "uk",
+    "united kingdom",
+    "australia",
+    "usa",
+    "united states",
+    "germany",
+    "new zealand"
 ]
 
-# ============================
-# Load Sources
-# ============================
+# ===================================
+# LOAD SOURCES
+# ===================================
 
 with open(
     "scripts/rss_sources.json",
@@ -50,18 +57,14 @@ with open(
 
     sources = json.load(f)["sources"]
 
-# ============================
-# Helpers
-# ============================
-
 cutoff_date = datetime.utcnow() - timedelta(days=DAYS_TO_KEEP)
 
 news_items = []
 seen_titles = set()
 
-# ============================
-# Collect News
-# ============================
+# ===================================
+# COLLECT
+# ===================================
 
 for source in sources:
 
@@ -69,7 +72,7 @@ for source in sources:
 
         feed = feedparser.parse(source["url"])
 
-        for entry in feed.entries:
+        for entry in feed.entries[:50]:
 
             title = entry.get("title", "").strip()
 
@@ -85,56 +88,40 @@ for source in sources:
             title_lower = title.lower()
             description_lower = description.lower()
 
-            # Duplicate check
             if title_lower in seen_titles:
                 continue
 
-            # Exclude irrelevant regions
-            if any(
-                keyword in title_lower
-                or keyword in description_lower
-                for keyword in EXCLUDED_KEYWORDS
-            ):
+            text = f"{title_lower} {description_lower}"
+
+            score = 0
+
+            for keyword in KEYWORDS:
+                if keyword in text:
+                    score += 1
+
+            if score == 0:
                 continue
 
-            # Keep only relevant content
-            relevance_score = 0
+            for keyword in BOOST_KEYWORDS:
+                if keyword in text:
+                    score += 5
 
-            for keyword in PRIORITY_KEYWORDS:
-
-                if (
-                    keyword in title_lower
-                    or keyword in description_lower
-                ):
-                    relevance_score += 1
-
-            if relevance_score == 0:
-                continue
-
-            # Date parsing
             try:
 
-                if "published_parsed" in entry:
+                if hasattr(entry, "published_parsed") and entry.published_parsed:
 
                     article_date = datetime(
                         *entry.published_parsed[:6]
-                    )
-
-                elif "published" in entry:
-
-                    article_date = parsedate_to_datetime(
-                        entry.published
                     )
 
                 else:
 
                     article_date = datetime.utcnow()
 
-            except Exception:
+            except:
 
                 article_date = datetime.utcnow()
 
-            # Only keep last 7 days
             if article_date < cutoff_date:
                 continue
 
@@ -156,19 +143,17 @@ for source in sources:
 
                 "url": entry.get("link", "#"),
 
-                "score": relevance_score
+                "score": score
 
             })
 
     except Exception as e:
 
-        print(
-            f"Failed source: {source['name']} - {e}"
-        )
+        print(f"Error: {source['name']} - {e}")
 
-# ============================
-# Sort News
-# ============================
+# ===================================
+# SORT
+# ===================================
 
 news_items.sort(
 
@@ -181,13 +166,16 @@ news_items.sort(
 
 )
 
-# Remove internal score
-for item in news_items:
-    item.pop("score", None)
+# Keep only best 50
 
-# ============================
-# Save
-# ============================
+news_items = news_items[:50]
+
+for item in news_items:
+    del item["score"]
+
+# ===================================
+# SAVE
+# ===================================
 
 with open(
     "data/news.json",
@@ -203,5 +191,5 @@ with open(
     )
 
 print(
-    f"Saved {len(news_items)} relevant articles."
+    f"Saved {len(news_items)} articles."
 )
