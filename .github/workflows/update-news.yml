@@ -1,0 +1,45 @@
+name: Update News
+
+on:
+  schedule:
+    # 8:05 AM Bangladesh Time (UTC+6)
+    - cron: '5 2 * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-news:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      - name: Fetch Latest News
+        run: |
+          python scripts/fetch_news.py
+
+      - name: Commit Updated News
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          git add data/news.json
+
+          git diff --staged --quiet || git commit -m "Auto update news"
+
+          git push
