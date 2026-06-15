@@ -94,35 +94,29 @@ function renderNews(newsItems){
 
 function generateContent(title, description){
 
-    title =
-        decodeURIComponent(title);
-
-    description =
-        decodeURIComponent(description);
+    title = decodeURIComponent(title);
+    description = decodeURIComponent(description);
 
     const summary =
+`${description}
 
-        `${description}
-
-This update may impact students planning to study abroad and should be reviewed carefully before making application decisions.`;
+This update may affect students planning their study abroad journey. Applicants should review the latest requirements and timelines before making decisions.`;
 
     const caption =
-
-`🎓 Study Abroad Update
+`🎓 STUDY ABROAD UPDATE
 
 ${title}
 
 ${description}
 
-Stay informed with the latest international education news from GradEd.
+Stay informed with the latest international education updates from GradEd Study Abroad News.
 
-#StudyAbroad #GradEd #InternationalEducation`;
+#StudyAbroad #InternationalStudents #GradEd`;
 
     const headline =
-
-        title.length > 60
-            ? title.substring(0,60) + "..."
-            : title;
+title.length > 70
+? title.substring(0,70) + "..."
+: title;
 
     document.getElementById(
         "summaryOutput"
@@ -137,7 +131,6 @@ Stay informed with the latest international education news from GradEd.
     ).innerText = headline;
 
     modal.style.display = "block";
-
 }
 
 // ====================================
