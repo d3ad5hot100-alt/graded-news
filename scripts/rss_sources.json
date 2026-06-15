@@ -1,16 +1,10 @@
 {
   "sources": [
     {
-      "name": "Times Higher Education",
-      "url": "https://www.timeshighereducation.com/rss.xml",
+      "name": "ICEF Monitor",
+      "url": "https://monitor.icef.com/feed/",
       "region": "global",
-      "category": "university"
-    },
-    {
-      "name": "University World News",
-      "url": "https://www.universityworldnews.com/rss.php",
-      "region": "global",
-      "category": "university"
+      "category": "visa"
     },
     {
       "name": "Study International",
@@ -19,10 +13,16 @@
       "category": "study-abroad"
     },
     {
-      "name": "ICEF Monitor",
-      "url": "https://monitor.icef.com/feed/",
+      "name": "University World News",
+      "url": "https://www.universityworldnews.com/rss.php",
       "region": "global",
-      "category": "visa"
+      "category": "university"
+    },
+    {
+      "name": "Times Higher Education",
+      "url": "https://www.timeshighereducation.com/rss.xml",
+      "region": "global",
+      "category": "university"
     },
     {
       "name": "The Daily Star",
